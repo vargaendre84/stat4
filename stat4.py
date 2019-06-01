@@ -1,15 +1,21 @@
 # -*- coding: utf-8 -*-
 
 import nltk
-from nltk.corpus import stopwords
-from collections import defaultdict
-tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-
 import os
+import sys
+
 from nltk.corpus import PlaintextCorpusReader
 corpus_root = 'textfiles/'
 newcorpus = PlaintextCorpusReader(corpus_root, '.*')
-import sys
+
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from collections import defaultdict
+
+tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+stop_words = set(stopwords.words('english'))
+import string
+
 
 def main():
 
@@ -29,13 +35,12 @@ def main():
     
     while True:
       try:
-        index = int(input('Type a number of your choice: 1 for 1st text, 2 for 2nd, ...'),10)
+        index = int(input('Type a number of your choice: [1 for 1st text, 2 for 2nd, ...]: '),10)
       except ValueError:
         print("Wrong input")
         continue
       if index < 0 or index > len(newcorpus.fileids())+1 : print("Wrong input")
       else: break
-    #if index > len(newcorpus.fileids()) : index = len(newcorpus.fileids())
     
     index -= 1
     print()
@@ -47,16 +52,20 @@ def main():
     print()
     print()
     
-
-    wtokens = newcorpus.words(newcorpus.fileids()[index])
-
+    wtokens = newcorpus.words(newcorpus.fileids()[index]) 
+    filteredtokens = [word for word in wtokens if word.isalpha()]
     
-    
-    
-    print("The number of tokens: ",len(wtokens))     
-    wfreq = nltk.FreqDist(wtokens)
-    print()
-    
+    statwords = []  
+    for w in filteredtokens:
+      if w not in stop_words : statwords.append(w)  
+          
+        
+    print("The number of Tokens: ",len(wtokens))  
+    print("The number of Filtered Tokens (Without punctuation): ",len(filteredtokens))  
+    print("The number of words (without stopwords): ",len(statwords))    
+       
+    wfreq = nltk.FreqDist(statwords)
+    print()   
     userword = input('Type the word you want to know of its frequency:')
     print()
     print("The frequency of the word '%s' : " %userword,wfreq[userword])
@@ -65,7 +74,7 @@ def main():
     
     while True:
       try:
-        usernumber = int(input('Add how many common words you want to list!'),10)
+        usernumber = int(input('Add how many common words you want to list! '),10)
       except ValueError:
         print("Wrong input")
         continue
@@ -74,15 +83,16 @@ def main():
     print("The %d most common words: " %usernumber,wfreq.most_common(usernumber))
 
     print()
-    sentcount = wfreq['.'] + wfreq['?'] + wfreq['!']  
+    wfreq2 = nltk.FreqDist(wtokens)
+    sentcount = wfreq2['.'] + wfreq2['?'] + wfreq2['!']
     print("The number of sentences: ",sentcount)
-    print("Average sentence length in number of words: ",len(wtokens)/sentcount )    
+    print("Average sentence length in number of words: ",len(wtokens)/sentcount)    
     
     print()
 
     while True:
       try:
-        usernumber = int(input('Add the minimum length of words you want to list!'),10)
+        usernumber = int(input('Add the minimum length of words you want to list! '),10)
       except ValueError:
         print("Wrong input")
         continue
